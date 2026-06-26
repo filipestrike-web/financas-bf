@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#1D9E75">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Finanças B&F">
+<title>Finanças B&F</title>
+<link rel="manifest" href="manifest.json">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --accent:#1D9E75;--accent-light:#E1F5EE;--accent-dark:#0F6E56;
+  --danger:#E24B4A;--danger-light:#FCEBEB;
+  --warning:#EF9F27;--warning-light:#FAEEDA;
+  --info:#378ADD;--info-light:#E6F1FB;
+  --purple:#7F77DD;--purple-light:#EEEDFE;
+  --bg:#ffffff;--bg2:#f5f5f5;--bg3:#efefef;
+  --text:#1a1a1a;--text2:#666;--text3:#999;
+  --border:#e0e0e0;--border2:#ccc;
+  --radius:12px;--radius-sm:8px;
+  --shadow:0 2px 12px rgba(0,0,0,.08);
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1a1a1a;--bg2:#242424;--bg3:#2e2e2e;
+  --text:#f0f0f0;--text2:#aaa;--text3:#666;
+  --border:#333;--border2:#444;
+}}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.header{background:var(--accent);color:#fff;padding:16px 20px 12px;position:sticky;top:0;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.app-title{font-size:18px;font-weight:600;letter-spacing:.3px}
+.header-actions{display:flex;gap:8px}
+.icon-btn{background:rgba(255,255,255,.2);border:none;color:#fff;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px}
+.icon-btn:active{background:rgba(255,255,255,.35)}
+.sync-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.18);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:500}
+.sync-dot{width:6px;height:6px;border-radius:50%}
+.sync-dot.ok{background:#a8f0d4}
+.sync-dot.wait{background:#ffd080;animation:blink 1s infinite}
+.sync-dot.off{background:rgba(255,255,255,.4)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.tabs{display:flex;overflow-x:auto;background:var(--bg2);border-bottom:1px solid var(--border);scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:12px 16px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.content{padding:16px;max-width:600px;margin:0 auto;padding-bottom:100px}
+.section{display:none}.section.active{display:block}
+.card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.metric{background:var(--bg2);border-radius:var(--radius-sm);padding:12px}
+.metric-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.metric-value{font-size:20px;font-weight:600;color:var(--text)}
+.metric-value.pos{color:var(--accent)}.metric-value.neg{color:var(--danger)}
+.list-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.list-item:last-child{border-bottom:none;padding-bottom:0}
+.list-icon{width:40px;height:40px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px}
+.list-main{flex:1;min-width:0}
+.list-title{font-size:14px;font-weight:500;color:var(--text)}
+.list-sub{font-size:12px;color:var(--text2);margin-top:2px}
+.list-amount{font-size:15px;font-weight:600;flex-shrink:0}
+.list-amount.pos{color:var(--accent)}.list-amount.neg{color:var(--danger)}
+.tag{display:inline-flex;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.tag-green{background:var(--accent-light);color:var(--accent-dark)}
+.tag-red{background:var(--danger-light);color:#A32D2D}
+.tag-amber{background:var(--warning-light);color:#854F0B}
+.tag-blue{background:var(--info-light);color:#185FA5}
+.tag-purple{background:var(--purple-light);color:#3C3489}
+.tag-gray{background:var(--bg3);color:var(--text2)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:var(--radius-sm);font-size:14px;font-weight:500;cursor:pointer;border:none;transition:opacity .15s}
+.btn:active{opacity:.8}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-warning{background:var(--warning);color:#fff}
+.btn-ghost{background:var(--bg2);color:var(--text2);border:1px solid var(--border)}
+.btn-full{width:100%;justify-content:center}
+.btn-sm{padding:6px 12px;font-size:12px}
+.fab{position:fixed;bottom:24px;right:20px;width:56px;height:56px;border-radius:50%;background:var(--accent);color:#fff;border:none;font-size:28px;cursor:pointer;box-shadow:0 4px 16px rgba(29,158,117,.4);display:flex;align-items:center;justify-content:center;z-index:40}
+.fab:active{transform:scale(.95)}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100}
+.overlay.open{display:block}
+.drawer{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-radius:20px 20px 0 0;padding:24px 20px 40px;z-index:101;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);max-height:90vh;overflow-y:auto}
+.drawer.open{transform:translateY(0)}
+.drawer-handle{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 20px}
+.drawer-title{font-size:17px;font-weight:600;margin-bottom:20px}
+.form-group{margin-bottom:14px}
+.form-label{font-size:12px;font-weight:500;color:var(--text2);margin-bottom:6px;display:block}
+.form-input{width:100%;padding:12px 14px;border:1px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg2);color:var(--text);font-size:15px;-webkit-appearance:none}
+.form-input:focus{outline:none;border-color:var(--accent);background:var(--bg)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.progress{height:8px;border-radius:4px;background:var(--bg3);overflow:hidden;margin:6px 0}
+.progress-fill{height:100%;border-radius:4px;transition:width .3s}
+.cc{border-radius:16px;padding:20px;color:#fff;min-height:160px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;margin-bottom:8px}
+.cc::before{content:'';position:absolute;top:-40px;right:-40px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.08)}
+.cc-chip{width:36px;height:26px;background:rgba(255,255,255,.3);border-radius:4px}
+.cc-number{font-size:15px;letter-spacing:3px;opacity:.8;margin:10px 0 4px}
+.cc-name{font-size:11px;text-transform:uppercase;letter-spacing:1px;opacity:.7}
+.cc-balance{font-size:22px;font-weight:600}
+.session-box{background:var(--accent-light);border:1px solid var(--accent);border-radius:var(--radius);padding:14px;margin-bottom:12px}
+.session-code{font-family:monospace;font-size:28px;font-weight:700;letter-spacing:6px;color:var(--accent-dark);text-align:center;padding:10px 0}
+.toast{position:fixed;top:80px;left:16px;right:16px;background:var(--accent-dark);color:#fff;padding:14px 16px;border-radius:var(--radius-sm);z-index:200;font-size:14px;box-shadow:var(--shadow);display:none;animation:slideDown .3s ease}
+.toast.show{display:block}
+@keyframes slideDown{from{transform:translateY(-20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-title{font-size:17px;font-weight:600}
+.empty{text-align:center;padding:32px 20px;color:var(--text3)}
+.empty-icon{font-size:40px;margin-bottom:8px}
+.empty-text{font-size:14px}
+.invest-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.invest-row:last-child{border-bottom:none}
+.invest-icon{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;background:var(--purple-light)}
+/* DESPESAS FIXAS */
+.fixed-pending-banner{background:var(--warning-light);border:1px solid var(--warning);border-radius:var(--radius);padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px;font-size:13px;color:#854F0B;cursor:pointer}
+.fixed-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.fixed-item:last-child{border-bottom:none}
+.fixed-badge{background:var(--purple-light);color:var(--purple);font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;letter-spacing:.3px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.toggle-label{font-size:14px;font-weight:500;color:var(--text)}
+.toggle-sub{font-size:12px;color:var(--text2);margin-top:2px}
+.toggle{position:relative;width:44px;height:26px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--border2);border-radius:13px;cursor:pointer;transition:.2s}
+.toggle-slider:before{content:'';position:absolute;width:20px;height:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle input:checked+.toggle-slider{background:var(--accent)}
+.toggle input:checked+.toggle-slider:before{transform:translateX(18px)}
+.exp-tabs{display:flex;gap:8px;margin-bottom:16px}
+.exp-tab{flex:1;padding:10px;border:1px solid var(--border);border-radius:var(--radius-sm);text-align:center;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;background:var(--bg2)}
+.exp-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+@media(min-width:600px){
+  .metric-grid{grid-template-columns:repeat(4,1fr)}
+  .fab{bottom:32px;right:32px}
+}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+
+<div class="header">
+  <div class="header-top">
+    <div class="app-title">💰 Finanças B&F</div>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="openDrawer('drawer-collab')">👥</button>
+      <button class="icon-btn" onclick="exportXLSX()">📊</button>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between">
+    <div class="sync-pill"><div class="sync-dot off" id="sync-dot"></div><span id="sync-label">Offline</span></div>
+    <div id="session-label" style="font-size:11px;color:rgba(255,255,255,.7)"></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="goTo('dashboard')">📊 Painel</div>
+  <div class="tab" onclick="goTo('expenses')">💸 Despesas</div>
+  <div class="tab" onclick="goTo('income')">💵 Ganhos</div>
+  <div class="tab" onclick="goTo('cards')">💳 Cartões</div>
+  <div class="tab" onclick="goTo('investments')">📈 Investimentos</div>
+  <div class="tab" onclick="goTo('goals')">🎯 Objetivos</div>
+</div>
+
+<div class="content">
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="section active">
+  <div id="pending-banner" class="fixed-pending-banner" style="display:none" onclick="goTo('expenses')">
+    <span style="font-size:20px">🔔</span>
+    <div><strong id="pending-count"></strong> despesa(s) fixa(s) pendente(s) este mês<br><span style="font-size:12px;opacity:.8">Toque para ver e confirmar</span></div>
+  </div>
+  <div class="metric-grid">
+    <div class="metric"><div class="metric-label">Saldo do mês</div><div class="metric-value" id="m-saldo">R$ 0</div></div>
+    <div class="metric"><div class="metric-label">Ganhos</div><div class="metric-value pos" id="m-ganhos">R$ 0</div></div>
+    <div class="metric"><div class="metric-label">Despesas</div><div class="metric-value neg" id="m-despesas">R$ 0</div></div>
+    <div class="metric"><div class="metric-label">Investido</div><div class="metric-value" id="m-invest">R$ 0</div></div>
+  </div>
+  <div class="card">
+    <div class="section-header"><div class="section-title">🕐 Últimas transações</div></div>
+    <div id="dash-tx"><div class="empty"><div class="empty-icon">📭</div><div class="empty-text">Nenhuma transação ainda</div></div></div>
+  </div>
+  <div class="card">
+    <div class="section-header"><div class="section-title">🎯 Objetivos</div></div>
+    <div id="dash-goals"><div class="empty"><div class="empty-text">Nenhum objetivo</div></div></div>
+  </div>
+</div>
+
+<!-- DESPESAS -->
+<div id="expenses" class="section">
+  <div class="section-header">
+    <div class="section-title">💸 Despesas</div>
+    <select class="form-input" style="width:auto;padding:8px 12px;font-size:13px" id="exp-filter-month" onchange="renderExpenses()"></select>
+  </div>
+  <div class="exp-tabs">
+    <div class="exp-tab active" onclick="switchExpTab('normal')">📋 Lançadas</div>
+    <div class="exp-tab" onclick="switchExpTab('fixed')">🔁 Fixas</div>
+    <div class="exp-tab" onclick="switchExpTab('pending')">⏳ Pendentes</div>
+  </div>
+  <div id="exp-normal"><div class="empty"><div class="empty-icon">✅</div><div class="empty-text">Nenhuma despesa</div></div></div>
+  <div id="exp-fixed" style="display:none"></div>
+  <div id="exp-pending" style="display:none"></div>
+</div>
+
+<!-- GANHOS -->
+<div id="income" class="section">
+  <div class="section-header"><div class="section-title">💵 Ganhos</div></div>
+  <div id="inc-list"><div class="empty"><div class="empty-icon">💼</div><div class="empty-text">Nenhum ganho registrado</div></div></div>
+</div>
+
+<!-- CARTÕES -->
+<div id="cards" class="section">
+  <div class="section-header"><div class="section-title">💳 Cartões</div></div>
+  <div id="cards-list"><div class="empty"><div class="empty-icon">💳</div><div class="empty-text">Nenhum cartão cadastrado</div></div></div>
+</div>
+
+<!-- INVESTIMENTOS -->
+<div id="investments" class="section">
+  <div class="section-header"><div class="section-title">📈 Investimentos</div></div>
+  <div class="metric-grid" style="margin-bottom:12px">
+    <div class="metric"><div class="metric-label">Total atual</div><div class="metric-value" id="inv-total">R$ 0</div></div>
+    <div class="metric"><div class="metric-label">Rendimento</div><div class="metric-value pos" id="inv-yield">R$ 0</div></div>
+  </div>
+  <div class="card"><div id="inv-list"><div class="empty"><div class="empty-icon">📈</div><div class="empty-text">Nenhum investimento</div></div></div></div>
+</div>
+
+<!-- OBJETIVOS -->
+<div id="goals" class="section">
+  <div class="section-header"><div class="section-title">🎯 Objetivos</div></div>
+  <div id="goals-list"><div class="empty"><div class="empty-icon">🎯</div><div class="empty-text">Nenhum objetivo definido</div></div></div>
+</div>
+
+</div>
+
+<button class="fab" onclick="openFabMenu()">＋</button>
+<div class="overlay" id="overlay" onclick="closeAll()"></div>
+
+<!-- DRAWER FAB -->
+<div class="drawer" id="drawer-fab">
+  <div class="drawer-handle"></div>
+  <div class="drawer-title">O que deseja adicionar?</div>
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <button class="btn btn-ghost btn-full" onclick="closeAll();setTimeout(()=>openDrawer('drawer-expense'),200)">💸 Nova despesa</button>
+    <button class="btn btn-ghost btn-full" onclick="closeAll();setTimeout(()=>openDrawer('drawer-fixed'),200)">🔁 Nova despesa fixa</button>
+    <button class="btn btn-ghost btn-full" onclick="closeAll();setTimeout(()=>openDrawer('drawer-income'),200)">💵 Novo ganho</button>
+    <button class="btn btn-ghost btn-full" onclick="closeAll();setTimeout(()=>openDrawer('drawer-card'),200)">💳 Novo cartão</button>
+    <button class="btn btn-ghost btn-full" onclick="closeAll();setTimeout(()=>openDrawer('drawer-invest'),200)">📈 Novo investimento</button>
+    <button class="btn btn-ghost btn-full" onclick="closeAll();setTimeout(()=>openDrawer('drawer-goal'),200)">🎯 Novo objetivo</button>
+  </div>
+</div>
+
+<!-- DRAWER DESPESA NORMAL -->
+<div class="drawer" id="drawer-expense">
+  <div class="drawer-handle"></div>
+  <div class="drawer-title">💸 Nova despesa</div>
+  <div class="form-group"><label class="form-label">Descrição</label><input class="form-input" id="e-desc" type="text" placeholder="ex: Supermercado"></div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Valor (R$)</label><input class="form-input" id="e-val" type="number" placeholder="0,00" step="0.01" min="0" inputmode="decimal"></div>
+    <div class="form-group"><label class="form-label">Data</label><input class="form-input" id="e-date" type="date"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Categoria</label>
+      <select class="form-input" id="e-cat"><option>Alimentação</option><option>Moradia</option><option>Transporte</option><option>Saúde</option><option>Lazer</option><option>Educação</option><option>Outros</option></select>
+    </div>
+    <div class="form-group"><label class="form-label">Cartão</label>
+      <select class="form-input" id="e-card"><option value="">Dinheiro/Débito</option></select>
+    </div>
+  </div>
+  <button class="btn btn-primary btn-full" onclick="saveExpense()">Salvar despesa</button>
+</div>
+
+<!-- DRAWER DESPESA FIXA -->
+<div class="drawer" id="drawer-fixed">
+  <div class="drawer-handle"></div>
+  <div class="drawer-title">🔁 Nova despesa fixa</div>
+  <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Será lançada automaticamente todo mês no mesmo dia da data cadastrada.</p>
+  <div class="form-group"><label class="form-label">Descrição</label><input class="form-input" id="f-desc" type="text" placeholder="ex: Aluguel, Luz, Internet..."></div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Valor padrão (R$)</label><input class="form-input" id="f-val" type="number" placeholder="0,00" step="0.01" min="0" inputmode="decimal"></div>
+    <div class="form-group"><label class="form-label">Data de vencimento</label><input class="form-input" id="f-date" type="date"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Categoria</label>
+      <select class="form-input" id="f-cat"><option>Moradia</option><option>Alimentação</option><option>Transporte</option><option>Saúde</option><option>Lazer</option><option>Educação</option><option>Outros</option></select>
+    </div>
+    <div class="form-group"><label class="form-label">Cartão</label>
+      <select class="form-input" id="f-card"><option value="">Dinheiro/Débito</option></select>
+    </div>
+  </div>
+  <button class="btn btn-primary btn-full" onclick="saveFixed()">Salvar despesa fixa</button>
+</div>
+
+<!-- DRAWER CONFIRMAR FIXA COM VALOR DIFERENTE -->
+<div class="drawer" id="drawer-confirm-fixed">
+  <div class="drawer-handle"></div>
+  <div class="drawer-title">✅ Confirmar lançamento</div>
+  <input type="hidden" id="cf-id">
+  <div id="cf-info" style="background:var(--bg2);border-radius:var(--radius-sm);padding:12px;margin-bottom:16px;font-size:14px"></div>
+  <div class="form-group">
+    <label class="form-label">Valor real este mês (R$) — deixe em branco para usar o valor padrão</label>
+    <input class="form-input" id="cf-val" type="number" placeholder="Valor padrão" step="0.01" min="0" inputmode="decimal">
+  </div>
+  <div class="form-group"><label class="form-label">Data do lançamento</label><input class="form-input" id="cf-date" type="date"></div>
+  <button class="btn btn-primary btn-full" onclick="confirmFixed()">Lançar agora</button>
+</div>
+
+<!-- DRAWER GANHO -->
+<div class="drawer" id="drawer-income">
+  <div class="drawer-handle"></div>
+  <div class="drawer-title">💵 Novo ganho</div>
+  <div class="form-group"><label class="form-label">Descrição</label><input class="form-input" id="i-desc" type="text" placeholder="ex: Salário"></div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Valor (R$)</label><input class="form-input" id="i-val" type="number" placeholder="0,00" step="0.01" min="0" inputmode="decimal"></div>
+    <div class="form-group"><label class="form-label">Data</label><input class="form-input" id="i-date" type="date"></div>
+  </div>
+  <div class="form-group"><label class="form-label">Tipo</label>
+    <select class="form-input" id="i-type"><option>Salário</option><option>Freelance</option><option>Investimento</option><option>Aluguel</option><option>Outros</option></select>
+  </div>
+  <button class="btn btn-primary btn-full" onclick="saveIncome()">Salvar ganho</button>
+</div>
+
+<!-- DRAWER CARTÃO -->
+<div class="drawer" id="drawer-card">
+  <div class="drawer-handle"></div>
+  <div class="drawer-title">💳 Novo cartão</div>
+  <div class="form-group"><label class="form-label">Nome do cartão</label><input class="form-input" id="c-name" type="text" placeholder="ex: Nubank"></div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Últimos 4 dígitos</label><input class="form-input" id="c-digits" type="text" maxlength="4" placeholder="0000" inputmode="numeric"></div>
+    <div class="form-group"><label class="form-label">Limite (R$)</label><input class="form-input" id="c-limit" type="number" placeholder="0,00" step="0.01" min="0" inputmode="decimal"></div>
+  </div>
+  <div class="form-group"><label class="form-label">Cor</label>
+    <select class="form-input" id="c-color">
+      <option value="linear-gradient(135deg,#1D9E75,#0F6E56)">Verde</option>
+      <option value="linear-gradient(135deg,#7F77DD,#3C3489)">Roxo</option>
+      <option value="linear-gradient(135deg,#378ADD,#0C447C)">Azul</option>
+      <option value="linear-gradient(135deg,#D85A30,#993C1D)">Laranja</option>
+      <option value="linear-gradient(135deg,#444441,#2C2C2A)">Preto</option>
+    </select>
+  </div>
+  <button class="btn btn-primary btn-full" onclick="saveCard()">Salvar cartão</button>
+</div>
+
+<!-- DRAWER INVESTIMENTO -->
+<div class="drawer" id="drawer-invest">
+  <div class="drawer-handle"></div>
+  <div class="drawer-title">📈 Novo investimento</div>
+  <div class="form-group"><label class="form-label">Nome</label><input class="form-input" id="inv-name" type="text" placeholder="ex: Tesouro Selic, PETR4"></div>
+  <div class="form-group"><label class="form-label">Tipo</label>
+    <select class="form-input" id="inv-type"><option>Renda Fixa</option><option>Ações</option><option>FII</option><option>Criptomoedas</option><option>Fundo</option><option>Outros</option></select>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Valor investido (R$)</label><input class="form-input" id="inv-val" type="number" placeholder="0,00" step="0.01" inputmode="decimal"></div>
+    <div class="form-group"><label class="form-label">Valor atual (R$)</label><input class="form-input" id="inv-cur" type="number" placeholder="0,00" step="0.01" inputmode="decimal"></div>
+  </div>
+  <div class="form-group"><label class="form-label">Data de compra</label><input class="form-input" id="inv-date" type="date"></div>
+  <button class="btn btn-primary btn-full" onclick="saveInvest()">Salvar investimento</button>
+</div>
+
+<!-- DRAWER OBJETIVO -->
+<div class="drawer" id="drawer-goal">
+  <div class="drawer-handle"></div>
+  <div class="drawer-title">🎯 Novo objetivo</div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Emoji</label><input class="form-input" id="g-emoji" type="text" placeholder="🏠" maxlength="2"></div>
+    <div class="form-group"><label class="form-label">Nome</label><input class="form-input" id="g-name" type="text" placeholder="ex: Casa própria"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Meta (R$)</label><input class="form-input" id="g-target" type="number" placeholder="0,00" step="0.01" inputmode="decimal"></div>
+    <div class="form-group"><label class="form-label">Já guardei (R$)</label><input class="form-input" id="g-current" type="number" placeholder="0,00" step="0.01" inputmode="decimal"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Prazo</label><input class="form-input" id="g-date" type="date"></div>
+    <div class="form-group"><label class="form-label">Prioridade</label>
+      <select class="form-input" id="g-priority"><option>Alta</option><option>Média</option><option>Baixa</option></select>
+    </div>
+  </div>
+  <button class="btn btn-primary btn-full" onclick="saveGoal()">Salvar objetivo</button>
+</div>
+
+<!-- DRAWER COLABORAR -->
+<div class="drawer" id="drawer-collab">
+  <div class="drawer-handle"></div>
+  <div class="drawer-title">👥 Colaboração em tempo real</div>
+  <p style="font-size:14px;color:var(--text2);margin-bottom:16px">Crie ou entre numa sessão compartilhada. Qualquer alteração aparece instantaneamente e gera notificação.</p>
+  <button class="btn btn-primary btn-full" style="margin-bottom:10px" onclick="createSession()">✨ Criar nova sessão</button>
+  <div style="display:flex;gap:8px">
+    <input class="form-input" id="join-code" type="text" placeholder="Código (ex: AB12CD)" maxlength="6" style="text-transform:uppercase;letter-spacing:3px;font-family:monospace;font-size:18px">
+    <button class="btn btn-ghost" onclick="joinSession()">Entrar</button>
+  </div>
+  <div id="session-active" style="display:none;margin-top:20px">
+    <div class="session-box">
+      <div style="font-size:12px;color:var(--accent-dark);margin-bottom:4px;text-align:center">Compartilhe este código</div>
+      <div class="session-code" id="display-code"></div>
+      <button class="btn btn-ghost btn-full btn-sm" onclick="copyCode()">📋 Copiar código</button>
+    </div>
+    <button class="btn btn-ghost btn-full" style="color:var(--danger);border-color:var(--danger)" onclick="leaveSession()">🚪 Sair da sessão</button>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, doc, setDoc, onSnapshot, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCAGYvgnbn3G_MeEB6Xr_IbXaCC5FQ4Gk8",
+  authDomain: "financas-pessoais-24a05.firebaseapp.com",
+  projectId: "financas-pessoais-24a05",
+  storageBucket: "financas-pessoais-24a05.firebasestorage.app",
+  messagingSenderId: "585777928780",
+  appId: "1:585777928780:web:1e2dbd6e361dfbc4a8f2e9"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ── STATE ──
+// fixedExpenses: [{id, desc, val, day, cat, cardId, active}]
+// expenses: normal + confirmed fixed ones (fixedId field links to parent)
+let state = { expenses:[], income:[], cards:[], investments:[], goals:[], fixedExpenses:[] };
+let sessionCode = localStorage.getItem('bf-session') || null;
+let unsubscribe = null;
+let myName = localStorage.getItem('bf-name') || ('Usuário '+Math.floor(Math.random()*100));
+let currentExpTab = 'normal';
+
+const fmt = n => 'R$ ' + Number(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtPct = n => (n>=0?'+':'')+n.toFixed(1)+'%';
+const getNow = () => new Date().toISOString().slice(0,7);
+const catEmoji = {'Alimentação':'🍔','Moradia':'🏠','Transporte':'🚗','Saúde':'❤️','Lazer':'🎮','Educação':'📚','Outros':'📦'};
+const incEmoji = {'Salário':'💼','Freelance':'💻','Investimento':'📈','Aluguel':'🏢','Outros':'💰'};
+const invEmoji = {'Renda Fixa':'🔒','Ações':'📊','FII':'🏢','Criptomoedas':'₿','Fundo':'📂','Outros':'💹'};
+const priorityTag = {'Alta':'tag-red','Média':'tag-amber','Baixa':'tag-green'};
+
+function showToast(msg, dur=3000){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+// ── DESPESAS FIXAS PENDENTES ──
+// Uma fixa está "pendente" no mês M se não existe nenhuma expense com fixedId === fixa.id e date.slice(0,7) === M
+function getPendingFixed(month){
+  if(!month) month=getNow();
+  return state.fixedExpenses.filter(f => {
+    if(!f.active) return false;
+    return !state.expenses.some(e => e.fixedId === f.id && e.date.slice(0,7) === month);
+  });
+}
+
+function autoLaunchFixed(){
+  const now = getNow();
+  const today = new Date();
+  state.fixedExpenses.forEach(f => {
+    if(!f.active) return;
+    // verifica se já existe lançamento deste mês
+    const alreadyLaunched = state.expenses.some(e => e.fixedId === f.id && e.date.slice(0,7) === now);
+    if(alreadyLaunched) return;
+    // verifica se hoje já passou o dia de vencimento
+    const dueDay = parseInt(f.day);
+    if(today.getDate() >= dueDay){
+      const dueDate = `${now}-${String(dueDay).padStart(2,'0')}`;
+      state.expenses.push({
+        id: Date.now() + Math.random(),
+        desc: f.desc,
+        val: f.val,
+        date: dueDate,
+        cat: f.cat,
+        cardId: f.cardId || '',
+        fixedId: f.id,
+        autoLaunched: true
+      });
+    }
+  });
+}
+
+// ── NAV ──
+window.goTo = id => {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelector(`.tab[onclick="goTo('${id}')"]`).classList.add('active');
+  if(id==='dashboard') renderDashboard();
+  if(id==='expenses') renderExpenses();
+  if(id==='income') renderIncome();
+  if(id==='cards') renderCards();
+  if(id==='investments') renderInvestments();
+  if(id==='goals') renderGoals();
+};
+
+window.switchExpTab = tab => {
+  currentExpTab = tab;
+  document.querySelectorAll('.exp-tab').forEach((el,i)=>{
+    el.classList.toggle('active', ['normal','fixed','pending'][i]===tab);
+  });
+  document.getElementById('exp-normal').style.display = tab==='normal'?'':'none';
+  document.getElementById('exp-fixed').style.display = tab==='fixed'?'':'none';
+  document.getElementById('exp-pending').style.display = tab==='pending'?'':'none';
+  renderExpenses();
+};
+
+// ── DRAWERS ──
+window.openDrawer = id => {
+  if(id==='drawer-expense'){
+    const sel=document.getElementById('e-card');
+    sel.innerHTML='<option value="">Dinheiro/Débito</option>';
+    state.cards.forEach(c=>{sel.innerHTML+=`<option value="${c.id}">${c.name}</option>`;});
+    document.getElementById('e-date').value=new Date().toISOString().slice(0,10);
+  }
+  if(id==='drawer-fixed'){
+    const sel=document.getElementById('f-card');
+    sel.innerHTML='<option value="">Dinheiro/Débito</option>';
+    state.cards.forEach(c=>{sel.innerHTML+=`<option value="${c.id}">${c.name}</option>`;});
+    document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
+  }
+  if(id==='drawer-income') document.getElementById('i-date').value=new Date().toISOString().slice(0,10);
+  if(id==='drawer-invest') document.getElementById('inv-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById(id).classList.add('open');
+};
+window.closeAll = () => {
+  document.getElementById('overlay').classList.remove('open');
+  document.querySelectorAll('.drawer').forEach(d=>d.classList.remove('open'));
+};
+window.openFabMenu = () => openDrawer('drawer-fab');
+
+function populateMonthFilter(){
+  const sel=document.getElementById('exp-filter-month');
+  const months=[...new Set(state.expenses.map(e=>e.date.slice(0,7)))].sort().reverse();
+  const now=getNow();
+  if(!months.includes(now)) months.unshift(now);
+  const cur=sel.value||now;
+  sel.innerHTML=months.map(m=>`<option value="${m}"${m===cur?' selected':''}>${m}</option>`).join('');
+}
+
+// ── FIREBASE ──
+function setSyncStatus(s){
+  const dot=document.getElementById('sync-dot'), lbl=document.getElementById('sync-label');
+  dot.className='sync-dot '+s;
+  lbl.textContent=s==='ok'?'Sincronizado':s==='wait'?'Sincronizando...':'Offline';
+}
+
+async function pushToFirebase(action='update'){
+  if(!sessionCode) return;
+  setSyncStatus('wait');
+  try{
+    await setDoc(doc(db,'sessions',sessionCode),{state,updatedAt:Date.now(),updatedBy:myName,lastAction:action});
+    setSyncStatus('ok');
+  } catch(e){ setSyncStatus('ok'); }
+}
+
+function startListening(){
+  if(unsubscribe) unsubscribe();
+  setSyncStatus('wait');
+  unsubscribe = onSnapshot(doc(db,'sessions',sessionCode), snap => {
+    if(!snap.exists()) return;
+    const data=snap.data();
+    if(data.updatedBy && data.updatedBy!==myName){
+      state=data.state;
+      if(!state.fixedExpenses) state.fixedExpenses=[];
+      autoLaunchFixed();
+      renderAll();
+      showToast(`🔔 ${data.updatedBy} fez uma atualização!`);
+      if(Notification.permission==='granted') new Notification('Finanças B&F',{body:`${data.updatedBy} atualizou as finanças.`});
+    } else {
+      state=data.state;
+      if(!state.fixedExpenses) state.fixedExpenses=[];
+    }
+    setSyncStatus('ok');
+  });
+}
+
+// ── SESSION ──
+const genCode = () => Math.random().toString(36).substring(2,8).toUpperCase();
+
+window.createSession = async () => {
+  sessionCode=genCode();
+  localStorage.setItem('bf-session',sessionCode);
+  await pushToFirebase('create');
+  activateSession();
+  requestNotifPerm();
+};
+window.joinSession = async () => {
+  const code=document.getElementById('join-code').value.trim().toUpperCase();
+  if(code.length<4){showToast('❌ Código inválido');return;}
+  const snap=await getDoc(doc(db,'sessions',code));
+  if(!snap.exists()){showToast('❌ Sessão não encontrada');return;}
+  sessionCode=code;
+  localStorage.setItem('bf-session',sessionCode);
+  state=snap.data().state;
+  if(!state.fixedExpenses) state.fixedExpenses=[];
+  activateSession(); renderAll(); requestNotifPerm();
+};
+function activateSession(){
+  document.getElementById('display-code').textContent=sessionCode;
+  document.getElementById('session-active').style.display='block';
+  document.getElementById('session-label').textContent='Sessão: '+sessionCode;
+  startListening(); closeAll(); showToast('✅ Sessão ativa: '+sessionCode);
+}
+window.leaveSession = () => {
+  if(unsubscribe){unsubscribe();unsubscribe=null;}
+  sessionCode=null; localStorage.removeItem('bf-session');
+  setSyncStatus('off');
+  document.getElementById('session-active').style.display='none';
+  document.getElementById('session-label').textContent='';
+  showToast('Sessão encerrada'); closeAll();
+};
+window.copyCode = () => navigator.clipboard.writeText(sessionCode).then(()=>showToast('📋 Código copiado!'));
+
+async function requestNotifPerm(){
+  if('Notification' in window && Notification.permission==='default'){
+    const p=await Notification.requestPermission();
+    if(p==='granted') showToast('🔔 Notificações ativadas!');
+  }
+}
+
+// ── SAVE DESPESA NORMAL ──
+window.saveExpense = async () => {
+  const desc=document.getElementById('e-desc').value.trim();
+  const val=parseFloat(document.getElementById('e-val').value);
+  const date=document.getElementById('e-date').value;
+  const cat=document.getElementById('e-cat').value;
+  const cardId=document.getElementById('e-card').value;
+  if(!desc||!val||!date){showToast('⚠️ Preencha todos os campos');return;}
+  state.expenses.push({id:Date.now(),desc,val,date,cat,cardId});
+  closeAll();
+  document.getElementById('e-desc').value=''; document.getElementById('e-val').value='';
+  renderExpenses(); renderDashboard();
+  await pushToFirebase(`💸 Nova despesa: ${desc}`);
+  showToast('💸 Despesa salva!');
+};
+
+// ── SAVE DESPESA FIXA ──
+window.saveFixed = async () => {
+  const desc=document.getElementById('f-desc').value.trim();
+  const val=parseFloat(document.getElementById('f-val').value);
+  const dateRaw=document.getElementById('f-date').value;
+  const cat=document.getElementById('f-cat').value;
+  const cardId=document.getElementById('f-card').value;
+  if(!desc||!val||!dateRaw){showToast('⚠️ Preencha todos os campos');return;}
+  const day=dateRaw.split('-')[2]; // dia do mês
+  const fixedId=Date.now();
+  state.fixedExpenses.push({id:fixedId,desc,val,day,cat,cardId,active:true});
+  // lança já no mês atual se o dia já passou ou é hoje
+  const today=new Date();
+  const now=getNow();
+  if(today.getDate()>=parseInt(day)){
+    const dueDate=`${now}-${day}`;
+    state.expenses.push({id:Date.now()+1,desc,val,date:dueDate,cat,cardId,fixedId,autoLaunched:true});
+  }
+  closeAll();
+  document.getElementById('f-desc').value=''; document.getElementById('f-val').value='';
+  renderAll();
+  await pushToFirebase(`🔁 Nova despesa fixa: ${desc}`);
+  showToast('🔁 Despesa fixa cadastrada!');
+};
+
+// ── CONFIRMAR FIXA COM VALOR DIFERENTE ──
+window.openConfirmFixed = (fixedId) => {
+  const f=state.fixedExpenses.find(x=>x.id===fixedId);
+  if(!f) return;
+  document.getElementById('cf-id').value=fixedId;
+  document.getElementById('cf-info').innerHTML=`<strong>${f.desc}</strong><br>Valor padrão: <strong>${fmt(f.val)}</strong> · Categoria: ${f.cat}`;
+  document.getElementById('cf-val').value='';
+  document.getElementById('cf-date').value=`${getNow()}-${String(f.day).padStart(2,'0')}`;
+  closeAll();
+  setTimeout(()=>openDrawer('drawer-confirm-fixed'),200);
+};
+
+window.confirmFixed = async () => {
+  const fixedId=parseInt(document.getElementById('cf-id').value);
+  const f=state.fixedExpenses.find(x=>x.id===fixedId);
+  if(!f) return;
+  const rawVal=document.getElementById('cf-val').value;
+  const val=rawVal?parseFloat(rawVal):f.val;
+  const date=document.getElementById('cf-date').value;
+  if(!date){showToast('⚠️ Informe a data');return;}
+  state.expenses.push({id:Date.now(),desc:f.desc,val,date,cat:f.cat,cardId:f.cardId,fixedId:f.id});
+  closeAll();
+  renderAll();
+  await pushToFirebase(`✅ Fixa confirmada: ${f.desc}`);
+  showToast('✅ Despesa fixa lançada!');
+};
+
+// ── TOGGLE FIXA ATIVA ──
+window.toggleFixed = async (id) => {
+  const f=state.fixedExpenses.find(x=>x.id===id);
+  if(f){ f.active=!f.active; renderExpenses(); await pushToFirebase('toggle fixed'); }
+};
+
+// ── DELETE ──
+window.deleteItem = async (arr, id) => {
+  const idx=arr.findIndex(x=>x.id===id);
+  if(idx>-1){ arr.splice(idx,1); renderAll(); await pushToFirebase('delete'); }
+};
+window.deleteFixed = async (id) => {
+  const idx=state.fixedExpenses.findIndex(x=>x.id===id);
+  if(idx>-1){ state.fixedExpenses.splice(idx,1); renderAll(); await pushToFirebase('delete fixed'); showToast('🗑 Despesa fixa removida'); }
+};
+
+// ── OUTROS SAVES ──
+window.saveIncome = async () => {
+  const desc=document.getElementById('i-desc').value.trim();
+  const val=parseFloat(document.getElementById('i-val').value);
+  const date=document.getElementById('i-date').value;
+  const type=document.getElementById('i-type').value;
+  if(!desc||!val||!date){showToast('⚠️ Preencha todos os campos');return;}
+  state.income.push({id:Date.now(),desc,val,date,type});
+  closeAll();
+  document.getElementById('i-desc').value=''; document.getElementById('i-val').value='';
+  renderIncome(); renderDashboard();
+  await pushToFirebase(`💵 Novo ganho: ${desc}`);
+  showToast('💵 Ganho salvo!');
+};
+window.saveCard = async () => {
+  const name=document.getElementById('c-name').value.trim();
+  const digits=document.getElementById('c-digits').value.trim();
+  const limit=parseFloat(document.getElementById('c-limit').value)||0;
+  const color=document.getElementById('c-color').value;
+  if(!name){showToast('⚠️ Nome obrigatório');return;}
+  state.cards.push({id:Date.now(),name,digits,limit,color});
+  closeAll();
+  document.getElementById('c-name').value=''; document.getElementById('c-digits').value=''; document.getElementById('c-limit').value='';
+  renderCards();
+  await pushToFirebase(`💳 Novo cartão: ${name}`);
+  showToast('💳 Cartão salvo!');
+};
+window.saveInvest = async () => {
+  const name=document.getElementById('inv-name').value.trim();
+  const type=document.getElementById('inv-type').value;
+  const val=parseFloat(document.getElementById('inv-val').value)||0;
+  const cur=parseFloat(document.getElementById('inv-cur').value)||val;
+  const date=document.getElementById('inv-date').value;
+  if(!name||!val){showToast('⚠️ Preencha nome e valor');return;}
+  state.investments.push({id:Date.now(),name,type,val,cur,date});
+  closeAll();
+  document.getElementById('inv-name').value=''; document.getElementById('inv-val').value=''; document.getElementById('inv-cur').value='';
+  renderInvestments(); renderDashboard();
+  await pushToFirebase(`📈 Novo investimento: ${name}`);
+  showToast('📈 Investimento salvo!');
+};
+window.saveGoal = async () => {
+  const emoji=document.getElementById('g-emoji').value||'🎯';
+  const name=document.getElementById('g-name').value.trim();
+  const target=parseFloat(document.getElementById('g-target').value)||0;
+  const current=parseFloat(document.getElementById('g-current').value)||0;
+  const date=document.getElementById('g-date').value;
+  const priority=document.getElementById('g-priority').value;
+  if(!name||!target){showToast('⚠️ Nome e meta obrigatórios');return;}
+  state.goals.push({id:Date.now(),emoji,name,target,current,date,priority});
+  closeAll();
+  document.getElementById('g-name').value=''; document.getElementById('g-target').value=''; document.getElementById('g-current').value='';
+  renderGoals(); renderDashboard();
+  await pushToFirebase(`🎯 Novo objetivo: ${name}`);
+  showToast('🎯 Objetivo salvo!');
+};
+window.addGoalAmount = async (id) => {
+  const amt=parseFloat(prompt('Quanto deseja depositar? (R$)'));
+  if(!amt||isNaN(amt)) return;
+  const g=state.goals.find(x=>x.id===id);
+  if(g){ g.current=Math.min(g.current+amt,g.target); renderGoals(); renderDashboard(); await pushToFirebase(`🎯 Depósito: ${g.name}`); showToast('💰 Depósito registrado!'); }
+};
+
+// ── RENDER ──
+function renderAll(){ renderDashboard(); renderExpenses(); renderIncome(); renderCards(); renderInvestments(); renderGoals(); }
+
+function renderDashboard(){
+  const now=getNow();
+  const pending=getPendingFixed(now);
+  const banner=document.getElementById('pending-banner');
+  if(pending.length>0){
+    banner.style.display='flex';
+    document.getElementById('pending-count').textContent=pending.length;
+  } else { banner.style.display='none'; }
+
+  const mExp=state.expenses.filter(e=>e.date.slice(0,7)===now);
+  const mInc=state.income.filter(i=>i.date.slice(0,7)===now);
+  const tExp=mExp.reduce((s,e)=>s+e.val,0);
+  const tInc=mInc.reduce((s,i)=>s+i.val,0);
+  const tInv=state.investments.reduce((s,i)=>s+i.cur,0);
+  const saldo=tInc-tExp;
+  document.getElementById('m-saldo').textContent=fmt(saldo);
+  document.getElementById('m-saldo').className='metric-value '+(saldo>=0?'pos':'neg');
+  document.getElementById('m-ganhos').textContent=fmt(tInc);
+  document.getElementById('m-despesas').textContent=fmt(tExp);
+  document.getElementById('m-invest').textContent=fmt(tInv);
+
+  const allTx=[...state.expenses.map(e=>({...e,kind:'exp'})),...state.income.map(i=>({...i,kind:'inc'}))].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);
+  const txEl=document.getElementById('dash-tx');
+  if(!allTx.length){ txEl.innerHTML='<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">Nenhuma transação ainda</div></div>'; }
+  else txEl.innerHTML=allTx.map(t=>{
+    const isExp=t.kind==='exp';
+    const emoji=isExp?(catEmoji[t.cat]||'📦'):(incEmoji[t.type]||'💰');
+    const isFixed=isExp&&t.fixedId;
+    return `<div class="list-item">
+      <div class="list-icon" style="background:${isExp?'#FEF2F2':'#ECFDF5'}">${emoji}</div>
+      <div class="list-main"><div class="list-title">${t.desc}${isFixed?' <span class="fixed-badge">FIXA</span>':''}</div><div class="list-sub">${t.date}</div></div>
+      <div class="list-amount ${isExp?'neg':'pos'}">${isExp?'-':'+'} ${fmt(t.val)}</div>
+    </div>`;
+  }).join('');
+
+  const goalsEl=document.getElementById('dash-goals');
+  if(!state.goals.length) goalsEl.innerHTML='<div class="empty"><div class="empty-text">Nenhum objetivo</div></div>';
+  else goalsEl.innerHTML=state.goals.slice(0,3).map(g=>{
+    const pct=Math.min((g.current/g.target)*100,100);
+    return `<div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:14px;font-weight:500">${g.emoji} ${g.name}</span><span style="font-size:13px;color:var(--accent);font-weight:600">${Math.round(pct)}%</span></div>
+      <div class="progress"><div class="progress-fill" style="width:${pct}%;background:var(--accent)"></div></div>
+      <div style="font-size:12px;color:var(--text3);margin-top:3px">${fmt(g.current)} de ${fmt(g.target)}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderExpenses(){
+  populateMonthFilter();
+  const month=document.getElementById('exp-filter-month').value||getNow();
+
+  // Tab: LANÇADAS
+  const normal=state.expenses.filter(e=>e.date.slice(0,7)===month).sort((a,b)=>b.date.localeCompare(a.date));
+  const normalEl=document.getElementById('exp-normal');
+  if(!normal.length) normalEl.innerHTML='<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">Nenhuma despesa neste mês</div></div>';
+  else normalEl.innerHTML=`<div class="card">${normal.map(e=>{
+    const isFixed=!!e.fixedId;
+    const cardName=e.cardId?state.cards.find(c=>c.id==e.cardId)?.name:'';
+    return `<div class="list-item">
+      <div class="list-icon" style="background:#FEF2F2">${catEmoji[e.cat]||'📦'}</div>
+      <div class="list-main">
+        <div class="list-title">${e.desc}${isFixed?' <span class="fixed-badge">FIXA</span>':''}</div>
+        <div class="list-sub">${e.date} · <span class="tag tag-red">${e.cat}</span>${cardName?` · <span class="tag tag-blue">${cardName}</span>`:''}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="list-amount neg">- ${fmt(e.val)}</div>
+        <button class="btn btn-ghost btn-sm" onclick="deleteItem(state.expenses,${e.id});renderExpenses();renderDashboard()">🗑</button>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+
+  // Tab: FIXAS CADASTRADAS
+  const fixedEl=document.getElementById('exp-fixed');
+  if(!state.fixedExpenses.length) fixedEl.innerHTML='<div class="empty"><div class="empty-icon">🔁</div><div class="empty-text">Nenhuma despesa fixa cadastrada.<br>Use o botão + para adicionar.</div></div>';
+  else fixedEl.innerHTML=`<div class="card">${state.fixedExpenses.map(f=>{
+    const cardName=f.cardId?state.cards.find(c=>c.id==f.cardId)?.name:'';
+    const launchedThisMonth=state.expenses.some(e=>e.fixedId===f.id&&e.date.slice(0,7)===month);
+    return `<div class="fixed-item">
+      <div class="list-icon" style="background:#F3F2FE">${catEmoji[f.cat]||'📦'}</div>
+      <div class="list-main">
+        <div class="list-title">${f.desc} ${f.active?'':'<span class="tag tag-gray">Pausada</span>'}</div>
+        <div class="list-sub">Todo dia ${f.day} · ${fmt(f.val)} · ${f.cat}${cardName?` · ${cardName}`:''}</div>
+        <div style="margin-top:4px">
+          ${launchedThisMonth
+            ? '<span class="tag tag-green">✅ Lançada este mês</span>'
+            : '<span class="tag tag-amber">⏳ Pendente este mês</span>'}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+        ${!launchedThisMonth ? `<button class="btn btn-primary btn-sm" onclick="openConfirmFixed(${f.id})">Lançar</button>` : ''}
+        <label class="toggle" title="${f.active?'Pausar':'Ativar'}"><input type="checkbox" ${f.active?'checked':''} onchange="toggleFixed(${f.id})"><span class="toggle-slider"></span></label>
+        <button class="btn btn-ghost btn-sm" onclick="deleteFixed(${f.id})">🗑</button>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+
+  // Tab: PENDENTES
+  const pending=getPendingFixed(month);
+  const pendingEl=document.getElementById('exp-pending');
+  if(!pending.length) pendingEl.innerHTML='<div class="empty"><div class="empty-icon">🎉</div><div class="empty-text">Nenhuma pendência este mês!</div></div>';
+  else pendingEl.innerHTML=`<div class="card">${pending.map(f=>`<div class="fixed-item">
+    <div class="list-icon" style="background:#FAEEDA">⏳</div>
+    <div class="list-main">
+      <div class="list-title">${f.desc}</div>
+      <div class="list-sub">Vence dia ${f.day} · Valor padrão: ${fmt(f.val)}</div>
+    </div>
+    <button class="btn btn-warning btn-sm" onclick="openConfirmFixed(${f.id})">Lançar</button>
+  </div>`).join('')}</div>`;
+}
+
+function renderIncome(){
+  const list=[...state.income].sort((a,b)=>b.date.localeCompare(a.date));
+  const el=document.getElementById('inc-list');
+  if(!list.length){el.innerHTML='<div class="empty"><div class="empty-icon">💼</div><div class="empty-text">Nenhum ganho registrado</div></div>';return;}
+  el.innerHTML=`<div class="card">${list.map(i=>`<div class="list-item">
+    <div class="list-icon" style="background:#ECFDF5">${incEmoji[i.type]||'💰'}</div>
+    <div class="list-main"><div class="list-title">${i.desc}</div><div class="list-sub">${i.date} · <span class="tag tag-green">${i.type}</span></div></div>
+    <div style="display:flex;align-items:center;gap:8px"><div class="list-amount pos">+ ${fmt(i.val)}</div>
+    <button class="btn btn-ghost btn-sm" onclick="deleteItem(state.income,${i.id});renderIncome();renderDashboard()">🗑</button></div>
+  </div>`).join('')}</div>`;
+}
+
+function renderCards(){
+  const el=document.getElementById('cards-list');
+  if(!state.cards.length){el.innerHTML='<div class="empty"><div class="empty-icon">💳</div><div class="empty-text">Nenhum cartão</div></div>';return;}
+  el.innerHTML=state.cards.map(c=>{
+    const used=state.expenses.filter(e=>e.cardId==c.id).reduce((s,e)=>s+e.val,0);
+    const pct=c.limit?Math.min((used/c.limit)*100,100):0;
+    return `<div class="card">
+      <div class="cc" style="background:${c.color}">
+        <div><div class="cc-chip"></div><div class="cc-number">•••• •••• •••• ${c.digits||'????'}</div></div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-end">
+          <div><div class="cc-name">${c.name}</div><div class="cc-balance">${fmt(used)}</div></div>
+          <div style="font-size:11px;opacity:.7">${c.limit?'Limite: '+fmt(c.limit):''}</div>
+        </div>
+      </div>
+      ${c.limit?`<div class="progress"><div class="progress-fill" style="width:${pct}%;background:var(--info)"></div></div><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text3);margin-top:4px"><span>${Math.round(pct)}% usado</span><span>Disponível: ${fmt(c.limit-used)}</span></div>`:''}
+      <button class="btn btn-ghost btn-full btn-sm" style="margin-top:10px;color:var(--danger)" onclick="deleteItem(state.cards,${c.id});renderCards()">🗑 Remover</button>
+    </div>`;
+  }).join('');
+}
+
+function renderInvestments(){
+  const tVal=state.investments.reduce((s,i)=>s+i.val,0);
+  const tCur=state.investments.reduce((s,i)=>s+i.cur,0);
+  const y=tCur-tVal; const pct=tVal?((y/tVal)*100):0;
+  document.getElementById('inv-total').textContent=fmt(tCur);
+  const yEl=document.getElementById('inv-yield');
+  yEl.textContent=(y>=0?'+':'')+fmt(y)+' ('+fmtPct(pct)+')';
+  yEl.className='metric-value '+(y>=0?'pos':'neg');
+  const el=document.getElementById('inv-list');
+  if(!state.investments.length){el.innerHTML='<div class="empty"><div class="empty-icon">📈</div><div class="empty-text">Nenhum investimento</div></div>';return;}
+  el.innerHTML=state.investments.map(i=>{
+    const chg=i.cur-i.val; const chgPct=i.val?((chg/i.val)*100):0;
+    return `<div class="invest-row">
+      <div class="invest-icon">${invEmoji[i.type]||'💹'}</div>
+      <div style="flex:1"><div style="font-size:14px;font-weight:500">${i.name}</div><div style="font-size:12px;color:var(--text2)">${i.type} · ${i.date}</div></div>
+      <div style="text-align:right"><div style="font-size:14px;font-weight:600">${fmt(i.cur)}</div><div style="font-size:12px;color:${chg>=0?'var(--accent)':'var(--danger)'}">${chg>=0?'+':''}${fmt(chg)} (${fmtPct(chgPct)})</div></div>
+      <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="deleteItem(state.investments,${i.id});renderInvestments();renderDashboard()">🗑</button>
+    </div>`;
+  }).join('');
+}
+
+function renderGoals(){
+  const el=document.getElementById('goals-list');
+  if(!state.goals.length){el.innerHTML='<div class="empty"><div class="empty-icon">🎯</div><div class="empty-text">Nenhum objetivo definido</div></div>';return;}
+  el.innerHTML=state.goals.map(g=>{
+    const pct=Math.min((g.current/g.target)*100,100);
+    const tagCls=priorityTag[g.priority]||'tag-blue';
+    const daysLeft=g.date?Math.ceil((new Date(g.date)-new Date())/(86400000)):null;
+    return `<div class="card">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:8px"><span style="font-size:28px">${g.emoji}</span><div><div style="font-size:15px;font-weight:600">${g.name}</div><div style="font-size:12px;color:var(--text3)">${g.date&&daysLeft!==null?'Prazo: '+g.date+' · '+daysLeft+' dias':''}</div></div></div>
+        <span class="tag ${tagCls}">${g.priority}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px"><span style="color:var(--accent);font-weight:600">${fmt(g.current)}</span><span style="color:var(--text2)">de ${fmt(g.target)}</span></div>
+      <div class="progress"><div class="progress-fill" style="width:${pct}%;background:var(--accent)"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text3);margin-top:4px"><span>${Math.round(pct)}% concluído</span><span>Falta ${fmt(g.target-g.current)}</span></div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="addGoalAmount(${g.id})">💰 Depositar</button>
+        <button class="btn btn-ghost" onclick="deleteItem(state.goals,${g.id});renderGoals();renderDashboard()">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── EXPORT ──
+window.exportXLSX = () => {
+  const s=document.createElement('script');
+  s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  s.onload=()=>{
+    const wb=XLSX.utils.book_new(), now=getNow();
+    const mExp=state.expenses.filter(e=>e.date.slice(0,7)===now);
+    const mInc=state.income.filter(i=>i.date.slice(0,7)===now);
+    const tExp=mExp.reduce((s,e)=>s+e.val,0), tInc=mInc.reduce((s,i)=>s+i.val,0);
+    const tInv=state.investments.reduce((s,i)=>s+i.cur,0);
+    const R=(rows,cols)=>{const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=cols;return ws;};
+    XLSX.utils.book_append_sheet(wb,R([['Resumo — '+now],[''],['Ganhos do mês',tInc],['Despesas do mês',tExp],['Saldo',tInc-tExp],[''],['Total investido',tInv],['Fixas ativas',state.fixedExpenses.filter(f=>f.active).length]],[{wch:28},{wch:18}]),'Resumo');
+    XLSX.utils.book_append_sheet(wb,R([['Data','Descrição','Categoria','Cartão','Valor','Fixa?'],...state.expenses.sort((a,b)=>b.date.localeCompare(a.date)).map(e=>[e.date,e.desc,e.cat,state.cards.find(c=>c.id==e.cardId)?.name||'Débito',e.val,e.fixedId?'Sim':'Não'])],[{wch:14},{wch:28},{wch:16},{wch:16},{wch:14},{wch:8}]),'Despesas');
+    XLSX.utils.book_append_sheet(wb,R([['Descrição','Valor Padrão','Dia do mês','Categoria','Ativa?'],...state.fixedExpenses.map(f=>[f.desc,f.val,f.day,f.cat,f.active?'Sim':'Não'])],[{wch:28},{wch:14},{wch:12},{wch:16},{wch:8}]),'Despesas Fixas');
+    XLSX.utils.book_append_sheet(wb,R([['Data','Descrição','Tipo','Valor'],...state.income.sort((a,b)=>b.date.localeCompare(a.date)).map(i=>[i.date,i.desc,i.type,i.val])],[{wch:14},{wch:28},{wch:16},{wch:14}]),'Ganhos');
+    XLSX.utils.book_append_sheet(wb,R([['Nome','Tipo','Data','Investido','Atual','Rendimento','%'],...state.investments.map(i=>{const c=i.cur-i.val;return[i.name,i.type,i.date,i.val,i.cur,c,i.val?((c/i.val)*100).toFixed(2)+'%':'0%'];})],[{wch:22},{wch:14},{wch:12},{wch:14},{wch:14},{wch:14},{wch:10}]),'Investimentos');
+    XLSX.utils.book_append_sheet(wb,R([['Objetivo','Meta','Guardado','%','Prazo','Prioridade'],...state.goals.map(g=>[g.name,g.target,g.current,((g.current/g.target)*100).toFixed(1)+'%',g.date||'-',g.priority])],[{wch:22},{wch:14},{wch:14},{wch:10},{wch:14},{wch:12}]),'Objetivos');
+    XLSX.writeFile(wb,`financas-bf-${now}.xlsx`);
+    showToast('📊 Planilha exportada!');
+  };
+  document.head.appendChild(s);
+};
+
+// ── INIT ──
+function init(){
+  if(!state.fixedExpenses) state.fixedExpenses=[];
+  autoLaunchFixed();
+  renderAll();
+  populateMonthFilter();
+  if(sessionCode){
+    document.getElementById('display-code').textContent=sessionCode;
+    document.getElementById('session-active').style.display='block';
+    document.getElementById('session-label').textContent='Sessão: '+sessionCode;
+    startListening();
+    showToast('🔄 Sessão retomada: '+sessionCode);
+  }
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
+}
+init();
+</script>
+</body>
+</html>
